@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Farming Planner - AgriConnect</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "@google/generative-ai": "https://esm.sh/@google/generative-ai"
+        }
+    }
+    </script>
+
+    <style>
+        :root {
+            --primary-color: #34c759; /* A more vibrant green */
+            --primary-hover: #2db84d;
+            --secondary-color: #007bff; /* A nice blue for accents */
+            --heading-color: #1a2a3a;
+            --text-color: #4a4a4a;
+            --light-text: #999;
+            --bg-color: #ffffff;
+            --alt-bg-color: #f7f9fb; /* Lighter, subtle background */
+            --border-color: #e0e6ed;
+            --white-color: #ffffff;
+            --danger-color: #dc3545;
+            --primary-gradient: linear-gradient(45deg, var(--primary-color), #2ed8b6); /* A modern, energetic gradient */
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Stronger, more elegant shadow */
+            --font-family: 'Inter', sans-serif;
+            --transition-speed: 0.4s;
+            --border-radius: 16px; /* A bit more rounded */
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-family); color: var(--text-color); background-color: var(--alt-bg-color); line-height: 1.8; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .app-section { padding: 100px 0; }
+        .section-header { text-align: center; margin-bottom: 3rem; }
+        .section-header h3 { font-size: 2.8rem; color: var(--heading-color); }
+        .section-header p { font-size: 1.2rem; color: var(--light-text); max-width: 600px; margin: 0 auto; }
+        .app-header { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 0; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        .app-header .container, .logo, .main-nav { display: flex; align-items: center; }
+        .app-header .container { justify-content: space-between; }
+        .logo { gap: 10px; text-decoration: none; display: flex; align-items: center; }
+        .logo svg { width: 32px; height: 32px; color: var(--primary-color); }
+        .logo h1 { font-size: 1.8rem; color: var(--heading-color); font-weight: 800; }
+        .main-nav a { text-decoration: none; color: var(--text-color); font-weight: 600; padding: 8px 16px; border-radius: 8px; transition: background-color var(--transition-speed); }
+        .main-nav a:hover { background-color: var(--border-color); }
+        .card { background: var(--bg-color); border-radius: var(--border-radius); padding: 2.5rem; box-shadow: var(--card-shadow); border: 1px solid var(--border-color); }
+        .btn { display: inline-block; padding: 14px 32px; border-radius: 50px; border: none; font-size: 1rem; font-weight: 700; cursor: pointer; text-decoration: none; text-align: center; transition: all var(--transition-speed) ease; }
+        .btn:disabled { background: #dcdcdc; color: #999; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-primary { background-image: var(--primary-gradient); color: var(--white-color); }
+        .btn-primary:not(:disabled):hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(52, 199, 89, 0.3); }
+        .btn-secondary { background-color: transparent; color: var(--text-color); border: 2px solid var(--border-color); }
+        .btn-secondary:hover { background-color: var(--alt-bg-color); }
+        .planner-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 2.5rem; align-items: flex-start; }
+        .input-card, .plan-card { height: 100%; }
+        .input-card h4 { font-size: 1.6rem; color: var(--heading-color); margin-bottom: 1.5rem; text-align: center; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.6rem; font-size: 0.95rem; color: var(--heading-color); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 10px; font-family: inherit; font-size: 1rem; transition: border-color var(--transition-speed), box-shadow var(--transition-speed); }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.1); }
+        textarea { resize: vertical; min-height: 150px; }
+        .form-actions { display: flex; justify-content: flex-end; margin-top: 2.5rem; }
+        .plan-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: var(--light-text); }
+        .plan-placeholder .icon { color: var(--primary-color); margin-bottom: 1rem; }
+        .loader-container { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 1rem; font-weight: 600; color: var(--heading-color); }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .plan-content h4 { font-size: 1.6rem; margin-bottom: 1rem; color: var(--heading-color); }
+        .plan-content h5 { font-size: 1.3rem; margin-top: 2rem; margin-bottom: 0.8rem; color: var(--secondary-color); }
+        .plan-content ul { list-style-type: '🌱 '; padding-left: 20px; }
+        .plan-content li { margin-bottom: 0.8rem; }
+        .plan-content p { white-space: pre-wrap; margin-bottom: 1.5rem; }
+        @media (max-width: 900px) { .planner-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    
+    <header class="app-header">
+       <div class="container">
+            <a href="index.html" class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-leaf"><path d="M14.8 6.2a2.8 2.8 0 0 0-4.6 0L4.2 12.8a2.8 2.8 0 0 0 .6 3.8l5.2 5.2c1.2 1.2 3.1 1.2 4.3 0l5.2-5.2a2.8 2.8 0 0 0 .6-3.8z"></path><path d="M12 17.5a.5.5 0 0 1-.5-.5V6.5a.5.5 0 0 1 1 0v10.5a.5.5 0 0 1-.5.5z"></path></svg>
+                <h1>AgriConnect</h1>
+            </a>
+
+        </div>
+    </header>
+
+    <main>
+        <section class="app-section">
+            <div class="container">
+                <div class="section-header">
+                    <h3>AI Personalized Farming Plan</h3>
+                    <p>Generate a custom plan for your crop based on your location and specific needs.</p>
+                </div>
+
+                <div class="planner-layout">
+                    <div class="card input-card">
+                        <h4>Farming Plan Details</h4>
+                        <div class="form-group">
+                            <label for="crop-input">Crop Type</label>
+                            <input type="text" id="crop-input" placeholder="e.g., Tomato, Wheat, Rice" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="location-input">Your Location</label>
+                            <input type="text" id="location-input" placeholder="e.g., Punjab, Maharashtra, Chennai" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="farm-size-input">Farm Size (in acres)</label>
+                            <input type="number" id="farm-size-input" placeholder="e.g., 2, 5, 10">
+                        </div>
+                        <div class="form-group">
+                            <label for="soil-type-input">Soil Type (Optional)</label>
+                            <input type="text" id="soil-type-input" placeholder="e.g., Clay, Loam, Sandy">
+                        </div>
+                        <div class="form-group">
+                            <label for="water-source-input">Water Source (Optional)</label>
+                            <input type="text" id="water-source-input" placeholder="e.g., Well, Canal, Rain-fed">
+                        </div>
+                        <div class="form-group">
+                            <label for="previous-crop-input">Previous Crop (Optional)</label>
+                            <input type="text" id="previous-crop-input" placeholder="e.g., Lentils, Corn">
+                        </div>
+                        <div class="form-group">
+                            <label for="season-input">Current Season</label>
+                            <select id="season-input">
+                                <option value="Monsoon">Monsoon</option>
+                                <option value="Winter">Winter</option>
+                                <option value="Summer">Summer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="goal-input">Your Goal (Optional)</label>
+                            <textarea id="goal-input" placeholder="e.g., Maximize yield, Use organic methods, Reduce water usage"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button id="generate-plan-btn" class="btn btn-primary">Generate Plan</button>
+                        </div>
+                    </div>
+
+                    <div class="card plan-card">
+                        <div id="plan-placeholder" class="plan-placeholder">
+                            <i data-feather="list" class="icon" style="width: 60px; height: 60px;"></i>
+                            <h4>Your Custom Plan</h4>
+                            <p>Enter your details to generate a plan. The more details you provide, the more precise the plan will be.</p>
+                        </div>
+                        <div id="loader-container" class="loader-container">
+                            <div class="loader"></div>
+                            <p id="loader-message">AI is crafting your personalized plan...</p>
+                        </div>
+                        <div id="plan-content" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+            const API_KEY = "AIzaSyCeil1RRuySImAxPOO6bxh31VDRXms4JSc";
+            const genAI = new GoogleGenerativeAI(API_KEY);
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+            const plannerApp = {
+                elements: {
+                    cropInput: document.getElementById('crop-input'),
+                    locationInput: document.getElementById('location-input'),
+                    farmSizeInput: document.getElementById('farm-size-input'),
+                    soilTypeInput: document.getElementById('soil-type-input'),
+                    waterSourceInput: document.getElementById('water-source-input'),
+                    previousCropInput: document.getElementById('previous-crop-input'),
+                    seasonInput: document.getElementById('season-input'),
+                    goalInput: document.getElementById('goal-input'),
+                    generateBtn: document.getElementById('generate-plan-btn'),
+                    planPlaceholder: document.getElementById('plan-placeholder'),
+                    loader: document.getElementById('loader-container'),
+                    loaderMessage: document.getElementById('loader-message'),
+                    planContent: document.getElementById('plan-content'),
+                },
+                
+                init() {
+                    this.bindEvents();
+                    // Set up a simple dynamic loader message
+                    const messages = ["Analyzing your inputs...", "Consulting regional data...", "Crafting your custom plan..."];
+                    let messageIndex = 0;
+                    setInterval(() => {
+                        if (this.elements.loader.style.display === 'flex') {
+                            this.elements.loaderMessage.textContent = messages[messageIndex];
+                            messageIndex = (messageIndex + 1) % messages.length;
+                        }
+                    }, 3000);
+                },
+
+                bindEvents() {
+                    this.elements.generateBtn.addEventListener('click', this.generatePlan.bind(this));
+                },
+
+                showView(viewToShow) {
+                    const views = ['planPlaceholder', 'loader', 'planContent'];
+                    views.forEach(view => {
+                        this.elements[view].style.display = (view === viewToShow) ? (view === 'planContent' ? 'block' : 'flex') : 'none';
+                    });
+                },
+
+                async generatePlan() {
+                    const crop = this.elements.cropInput.value.trim();
+                    const location = this.elements.locationInput.value.trim();
+
+                    if (!crop || !location) {
+                        alert("Please enter a crop type and your location to get a plan.");
+                        return;
+                    }
+
+                    this.showView('loader');
+
+                    const farmSize = this.elements.farmSizeInput.value.trim();
+                    const soil = this.elements.soilTypeInput.value.trim();
+                    const waterSource = this.elements.waterSourceInput.value.trim();
+                    const previousCrop = this.elements.previousCropInput.value.trim();
+                    const season = this.elements.seasonInput.value;
+                    const goal = this.elements.goalInput.value.trim();
+
+                    const prompt = `
+                        As an expert agricultural advisor, create a personalized farming plan for a farmer in India. 
+                        The plan should be for:
+                        - **Crop:** ${crop}
+                        - **Location:** ${location}
+                        - **Current Season:** ${season}
+                        ${farmSize ? `- **Farm Size:** ${farmSize} acres` : ''}
+                        ${soil ? `- **Soil Type:** ${soil}` : ''}
+                        ${waterSource ? `- **Water Source:** ${waterSource}` : ''}
+                        ${previousCrop ? `- **Previous Crop:** ${previousCrop}` : ''}
+                        ${goal ? `- **Farmer's Goal:** ${goal}` : ''}
+                        
+                        The plan should be detailed, practical, and tailored for the specific region's climate and farming practices. Structure the plan into distinct phases. For each phase, provide a detailed description and a bulleted list of actionable steps. The phases should be:
+                        1. **Pre-Sowing (Land & Seed Preparation):**
+                        2. **Sowing & Germination:**
+                        3. **Growth, Nutrient & Pest Management:**
+                        4. **Harvest & Post-Harvest:**
+                        
+                        The response should be formatted using markdown headings (##) for each phase. Ensure the language is clear, practical, and includes advice on suitable varieties, pest control, irrigation methods, and fertilizer application specific to the region and season.`;
+
+                    try {
+                        const result = await model.generateContent(prompt);
+                        const response = await result.response;
+                        const text = response.text();
+                        
+                        this.displayPlan(text);
+                    } catch (error) {
+                        console.error("API Error:", error);
+                        this.elements.planContent.innerHTML = `<p style="color:var(--danger-color);"><strong>Plan Generation Failed!</strong><br>Could not get a response from the AI. Please check your API key or try again later.</p>`;
+                        this.showView('planContent');
+                    }
+                },
+
+                displayPlan(markdownText) {
+                    const htmlContent = this.markedParse(markdownText);
+                    this.elements.planContent.innerHTML = htmlContent;
+                    this.showView('planContent');
+                    feather.replace();
+                },
+
+                markedParse(text) {
+                    let html = text.replace(/^#+\s*(.*)$/gm, '<h4>$1</h4>');
+                    html = html.replace(/^\*\s*(.*)$/gm, '<li>$1</li>');
+                    html = html.replace(/^(<li>.*<\/li>)+/gm, '<ul>$&</ul>');
+                    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    return html;
+                }
+            };
+            
+            plannerApp.init();
+        });
+    </script>
+</body>
+</html>

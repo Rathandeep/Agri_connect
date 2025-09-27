@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Insurance Center - AgriConnect</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "@google/genai": "https://esm.run/@google/genai"
+        }
+    }
+    </script>
+    <style>
+        :root {
+            --primary-color: #34c759;
+            --primary-hover: #2db84d;
+            --secondary-color: #007bff;
+            --heading-color: #1a2a3a;
+            --text-color: #4a4a4a;
+            --light-text: #999;
+            --bg-color: #ffffff;
+            --alt-bg-color: #f7f9fb;
+            --border-color: #e0e6ed;
+            --white-color: #ffffff;
+            --danger-color: #dc3545;
+            --primary-gradient: linear-gradient(45deg, var(--primary-color), #2ed8b6);
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --font-family: 'Inter', sans-serif;
+            --transition-speed: 0.4s;
+            --border-radius: 16px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-family); color: var(--text-color); background-color: var(--alt-bg-color); line-height: 1.8; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .app-header { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 0; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        .app-header .container, .logo, .main-nav { display: flex; align-items: center; }
+        .app-header .container { justify-content: space-between; }
+        .logo { gap: 10px; text-decoration: none; display: flex; align-items: center; }
+        .logo svg { width: 32px; height: 32px; color: var(--primary-color); }
+        .logo h1 { font-size: 1.8rem; color: var(--heading-color); font-weight: 800; }
+        .main-nav a { text-decoration: none; color: var(--text-color); font-weight: 600; padding: 8px 16px; border-radius: 8px; transition: background-color var(--transition-speed); }
+        .main-nav a:hover { background-color: var(--border-color); }
+        h1, h2, h3, h4 { color: var(--heading-color); }
+        .insurance-section { padding: 80px 0; }
+        .section-header { text-align: center; margin-bottom: 40px; }
+        .section-header h2 { font-size: 2.5rem; }
+        .section-header p { font-size: 1.1rem; color: var(--light-text); }
+        .card { background-color: var(--bg-color); border-radius: var(--border-radius); box-shadow: var(--card-shadow); padding: 30px; border: 1px solid var(--border-color); }
+        .grid-layout { display: grid; gap: 30px; }
+        .grid-2-col { grid-template-columns: 1fr 1fr; }
+        .grid-3-col { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+        .grid-4-col { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+        .claim-form .card { max-width: 600px; margin: 0 auto; }
+        .claim-form h3, .advisor-card h3 { text-align: center; margin-bottom: 20px; font-size: 1.8rem; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 1rem; }
+        .form-group textarea { resize: vertical; min-height: 120px; }
+        .btn { display: inline-block; padding: 12px 24px; border-radius: 50px; border: none; font-size: 1rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: all var(--transition-speed); }
+        .btn:disabled { background-image: none; background-color: #bdc3c7; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-primary { background-image: var(--primary-gradient); color: var(--white-color); }
+        .btn-primary:not(:disabled):hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(52, 199, 89, 0.3); }
+        .btn-secondary { background-color: #f0f2f5; color: var(--heading-color); }
+        .btn-secondary:not(:disabled):hover { background-color: #e0e6ed; }
+        .claim-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 20px; }
+        .advisor-card .form-group label { font-size: 1rem; }
+        .scheme-card { text-align: center; padding: 30px 20px; }
+        .scheme-card h4 { font-size: 1.2rem; margin-bottom: 10px; }
+        .scheme-card p { font-size: 0.9rem; color: var(--light-text); margin-bottom: 20px; }
+        .scheme-card a { font-weight: 600; color: var(--secondary-color); text-decoration: none; }
+        .scheme-card a:hover { text-decoration: underline; }
+        .claim-status-card h4 { margin-bottom: 20px; font-size: 1.5rem; }
+        .claim-item { background-color: var(--alt-bg-color); border-radius: 10px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .claim-info strong { color: var(--heading-color); }
+        .claim-status { font-weight: 600; padding: 5px 15px; border-radius: 50px; font-size: 0.8rem; }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-review { background-color: #d1ecf1; color: #0c5460; }
+        .ai-result-card { display: none; margin-top: 20px; }
+        .ai-result-card h4 { font-size: 1.6rem; margin-bottom: 1rem; }
+        .ai-result-card ul { list-style: none; padding-left: 0; }
+        .ai-result-card li { background-color: var(--alt-bg-color); padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        .ai-result-card li strong { color: var(--secondary-color); }
+        .loader-container { display: none; justify-content: center; align-items: center; padding: 40px; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .sub-heading { margin-top: 50px; margin-bottom: 20px; font-size: 1.8rem; text-align: center; }
+        .ocr-section { margin-bottom: 20px; }
+        .ocr-section button { width: 100%; }
+
+        @media (max-width: 900px) {
+            .grid-2-col, .grid-4-col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-leaf"><path d="M14.8 6.2a2.8 2.8 0 0 0-4.6 0L4.2 12.8a2.8 2.8 0 0 0 .6 3.8l5.2 5.2c1.2 1.2 3.1 1.2 4.3 0l5.2-5.2a2.8 2.8 0 0 0 .6-3.8z"></path><path d="M12 17.5a.5.5 0 0 1-.5-.5V6.5a.5.5 0 0 1 1 0v10.5a.5.5 0 0 1-.5-.5z"></path></svg>
+                <h1>AgriConnect</h1>
+            </a>
+            <nav class="main-nav">
+                <a href="#">Home</a>
+                <a href="#">Marketplace</a>
+                <a href="#">Sell Crops</a>
+                <a href="#">Insurance</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="insurance-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Crop Insurance Center</h2>
+                    <p>Protect your harvest and financial future. Get AI-powered advice, explore plans, and file claims easily.</p>
+                </div>
+                <div class="grid-layout grid-2-col">
+                    <div class="card claim-form">
+                        <h3>File a Claim in Minutes</h3>
+                        <p class="text-center" style="margin-bottom: 20px;">Suffered a crop loss? Submit your claim details here. Use our AI Assistant to help write a clear description of the incident.</p>
+                        <form id="claim-form">
+                            <div class="ocr-section">
+                                <input type="file" id="ocr-input" accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-secondary" id="scan-policy-btn">Scan Policy to Auto-fill</button>
+                                <p id="ocr-status" style="text-align: center; color: var(--light-text); margin-top: 10px;"></p>
+                            </div>
+                            <div class="form-group">
+                                <label for="policy-number">Policy Number*</label>
+                                <input type="text" id="policy-number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="incident-date">Date of Incident*</label>
+                                <input type="date" id="incident-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="loss-description">Description of Loss*</label>
+                                <textarea id="loss-description" required></textarea>
+                            </div>
+                            <div class="claim-actions">
+                                <button type="button" class="btn btn-secondary" id="ai-assist-btn">AI Assist</button>
+                                <button type="submit" class="btn btn-primary">Submit Claim</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card advisor-card">
+                        <h3>AI Insurance Advisor</h3>
+                        <p class="text-center" style="margin-bottom: 20px;">Confused about which plan to choose? Answer three simple questions to get a personalized recommendation from our AI expert.</p>
+                        <div class="form-group">
+                            <label for="main-crop">Your Main Crop</label>
+                            <input type="text" id="main-crop" placeholder="e.g., Rice, Wheat, Cotton">
+                        </div>
+                        <div class="form-group">
+                            <label for="land-size">Land Size (Acres)</label>
+                            <input type="number" id="land-size" min="1" placeholder="e.g., 5">
+                        </div>
+                        <div class="form-group">
+                            <label for="biggest-worry">Your Biggest Worry</label>
+                            <input type="text" id="biggest-worry" placeholder="e.g., Drought, Floods, Pests">
+                        </div>
+                        <div style="text-align: center;">
+                            <button class="btn btn-primary" id="get-ai-advice-btn">Get AI Advice</button>
+                        </div>
+                        <div id="ai-advice-loader" class="loader-container">
+                            <div class="loader"></div>
+                        </div>
+                        <div id="ai-advice-result" class="ai-result-card"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="insurance-section" style="padding-top: 0;">
+            <div class="container">
+                <h3 class="sub-heading">Government Schemes</h3>
+                <div class="grid-layout grid-4-col">
+                    <div class="card scheme-card">
+                        <i data-feather="check-circle" style="color: var(--primary-color);"></i>
+                        <h4>PM Fasal Bima Yojana (PMFBY)</h4>
+                        <p>Flagship government scheme providing comprehensive insurance against yield loss for all food crops, oilseeds, and annual commercial/horticultural crops.</p>
+                        <a href="#">Learn & Apply</a>
+                    </div>
+                    <div class="card scheme-card">
+                        <i data-feather="cloud-drizzle" style="color: var(--secondary-color);"></i>
+                        <h4>Weather Based Crop Insurance (WBCIS)</h4>
+                        <p>Provides payouts based on adverse weather triggers like deficit rainfall, high temperature, etc., without needing on-field assessments.</p>
+                        <a href="#">Learn & Apply</a>
+                    </div>
+                    <div class="card scheme-card">
+                        <i data-feather="sun" style="color: #FFC107;"></i>
+                        <h4>Coconut Palm Insurance Scheme (CPIS)</h4>
+                        <p>Specific coverage for coconut palm growers against natural calamities and pests, leading to death of the palm.</p>
+                        <a href="#">Learn & Apply</a>
+                    </div>
+                    <div class="card scheme-card">
+                        <i data-feather="credit-card" style="color: #6c757d;"></i>
+                        <h4>Kisan Credit Card (KCC) Scheme</h4>
+                        <p>While not direct insurance, it provides farmers with affordable credit, which can be crucial for recovery after a crop loss.</p>
+                        <a href="#">Learn & Apply</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="insurance-section" style="padding-top: 0;">
+            <div class="container">
+                <h3 class="sub-heading">Compare Private Plans</h3>
+                <div class="grid-layout grid-3-col">
+                    <div class="card scheme-card">
+                        <h4>HDFC ERGO - Weather Insurance</h4>
+                        <p>Offers index-based insurance products that provide cover against losses due to deviant weather conditions.</p>
+                        <a href="#">Get a Quote</a>
+                    </div>
+                    <div class="card scheme-card">
+                        <h4>ICICI Lombard - Rural Insurance</h4>
+                        <p>Provides a range of products for farmers including crop insurance, tractor insurance, and livestock insurance.</p>
+                        <a href="#">Get a Quote</a>
+                    </div>
+                    <div class="card scheme-card">
+                        <h4>Bajaj Allianz - PMFBY Partner</h4>
+                        <p>A key private partner in implementing the PMFBY scheme across various states in India.</p>
+                        <a href="#">Get a Quote</a>
+                    </div>
+                    <div class="card scheme-card">
+                        <h4>Reliance General - Crop Insurance</h4>
+                        <p>Offers yield-based and weather-based crop insurance schemes to protect farmers from production risks.</p>
+                        <a href="#">Get a Quote</a>
+                    </div>
+                    <div class="card scheme-card">
+                        <h4>SBI General - Crop Insurance</h4>
+                        <p>Provides comprehensive crop insurance under various government-sponsored schemes.</p>
+                        <a href="#">Get a Quote</a>
+                    </div>
+                    <div class="card scheme-card">
+                        <h4>Tata AIG - Rural Insurance</h4>
+                        <p>Covers a wide spectrum of rural and agricultural needs, including weather and yield-based insurance.</p>
+                        <a href="#">Get a Quote</a>
+                    </div>
+                    <div class="card scheme-card">
+                        <h4>IFFCO-Tokio General Insurance</h4>
+                        <p>A major player in rural insurance, offering a variety of products for farmers and agricultural businesses.</p>
+                        <a href="#">Get a Quote</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="insurance-section" style="padding-top: 0;">
+            <div class="container">
+                <h3 class="sub-heading">Your Submitted Claims</h3>
+                <div class="card claim-status-card">
+                    <div id="claims-list">
+                        <div class="claim-item">
+                            <div class="claim-info">
+                                <strong>Policy:</strong> <span>123</span><br>
+                                <strong>Incident Date:</strong> <span>18/9/2025</span>
+                            </div>
+                            <div class="claim-status status-pending">Pending</div>
+                        </div>
+                        <div class="claim-item">
+                            <div class="claim-info">
+                                <strong>Policy:</strong> <span>47347</span><br>
+                                <strong>Incident Date:</strong> <span>12/9/2025</span>
+                            </div>
+                            <div class="claim-status status-review">Pending Review</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { GoogleGenAI, Type } from "@google/genai";
+
+        async function fileToGenerativePart(file) {
+            const base64EncodedDataPromise = new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
+            return { inlineData: { data: await base64EncodedDataPromise, mimeType: file.type } };
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+            const elements = {
+                claimForm: document.getElementById('claim-form'),
+                policyNumber: document.getElementById('policy-number'),
+                incidentDate: document.getElementById('incident-date'),
+                lossDescription: document.getElementById('loss-description'),
+                aiAssistBtn: document.getElementById('ai-assist-btn'),
+                submitClaimBtn: document.querySelector('#claim-form button[type="submit"]'),
+                claimsList: document.getElementById('claims-list'),
+                mainCrop: document.getElementById('main-crop'),
+                landSize: document.getElementById('land-size'),
+                biggestWorry: document.getElementById('biggest-worry'),
+                getAiAdviceBtn: document.getElementById('get-ai-advice-btn'),
+                aiAdviceLoader: document.getElementById('ai-advice-loader'),
+                aiAdviceResult: document.getElementById('ai-advice-result'),
+                ocrInput: document.getElementById('ocr-input'),
+                scanPolicyBtn: document.getElementById('scan-policy-btn'),
+                ocrStatus: document.getElementById('ocr-status')
+            };
+
+            const claimsKey = 'agriconnect_claims';
+
+            function loadClaims() {
+                const claims = JSON.parse(localStorage.getItem(claimsKey) || '[]');
+                elements.claimsList.innerHTML = ''; // Clear existing claims
+                if(claims.length === 0) {
+                    // Display placeholder if no claims
+                    elements.claimsList.innerHTML = '<p>You have not submitted any claims yet.</p>';
+                    return;
+                }
+                claims.forEach(claim => {
+                    addClaimToDOM(claim.policy, claim.date, claim.status);
+                });
+            }
+
+            function saveClaim(policy, date, status) {
+                const claims = JSON.parse(localStorage.getItem(claimsKey) || '[]');
+                claims.push({ policy, date, status });
+                localStorage.setItem(claimsKey, JSON.stringify(claims));
+            }
+
+            function addClaimToDOM(policy, date, status) {
+                 if (document.querySelector('#claims-list p')) {
+                    elements.claimsList.innerHTML = ''; // Clear placeholder
+                }
+                const claimItem = document.createElement('div');
+                claimItem.className = 'claim-item';
+                const statusClass = status === 'Pending' ? 'status-pending' : 'status-review';
+                claimItem.innerHTML = `
+                    <div class="claim-info">
+                        <strong>Policy:</strong> <span>${policy}</span><br>
+                        <strong>Incident Date:</strong> <span>${date}</span>
+                    </div>
+                    <div class="claim-status ${statusClass}">${status}</div>
+                `;
+                elements.claimsList.prepend(claimItem);
+            }
+
+            elements.aiAssistBtn.addEventListener('click', async () => {
+                const description = elements.lossDescription.value;
+                if (!description) {
+                    alert("Please write a few words about your loss before using AI Assist.");
+                    return;
+                }
+                
+                const originalButtonText = elements.aiAssistBtn.textContent;
+                elements.aiAssistBtn.disabled = true;
+                elements.aiAssistBtn.textContent = 'Rewriting...';
+
+                try {
+                    const prompt = `Rewrite the following description of a crop loss incident to be more formal and detailed for an insurance claim. Focus on clarity and a professional tone. The description is: "${description}"`;
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-2.5-flash',
+                        contents: prompt,
+                    });
+                    elements.lossDescription.value = response.text;
+                } catch (error) {
+                    console.error("AI Assist Error:", error);
+                    alert("Failed to get a response from the AI. Please try again.");
+                } finally {
+                    elements.aiAssistBtn.disabled = false;
+                    elements.aiAssistBtn.textContent = originalButtonText;
+                }
+            });
+
+            elements.claimForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const policyNumber = elements.policyNumber.value;
+                const incidentDate = elements.incidentDate.value;
+                const lossDescription = elements.lossDescription.value;
+
+                if (policyNumber && incidentDate && lossDescription) {
+                    saveClaim(policyNumber, incidentDate, 'Pending');
+                    addClaimToDOM(policyNumber, incidentDate, 'Pending');
+                    elements.claimForm.reset();
+                    alert("Your claim has been submitted successfully!");
+                }
+            });
+
+            elements.getAiAdviceBtn.addEventListener('click', async () => {
+                const crop = elements.mainCrop.value;
+                const landSize = elements.landSize.value;
+                const worry = elements.biggestWorry.value;
+
+                if (!crop || !landSize || !worry) {
+                    alert("Please fill in all the details to get a recommendation.");
+                    return;
+                }
+
+                elements.getAiAdviceBtn.disabled = true;
+                elements.aiAdviceLoader.style.display = 'flex';
+                elements.aiAdviceResult.style.display = 'none';
+
+                const prompt = `Based on a farmer's input in India, recommend a suitable crop insurance plan. 
+                - **Main Crop:** ${crop}
+                - **Land Size:** ${landSize} acres
+                - **Biggest Worry:** ${worry}
+                Provide a personalized recommendation and a brief explanation. Include which government and private plans are most suitable. For example, if the worry is floods, recommend a weather-based scheme. Format the response with a heading for the recommendation and a bulleted list of recommended schemes.`;
+
+                try {
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-2.5-flash',
+                        contents: prompt,
+                    });
+                    const text = response.text;
+
+                    elements.aiAdviceResult.innerHTML = `<h4>AI Insurance Recommendation</h4>` +
+                                                         text.replace(/^#+\s*(.*)$/gm, '<h4>$1</h4>')
+                                                             .replace(/^\*\s*(.*)$/gm, '<li>$1</li>')
+                                                             .replace(/(<\/li>)\s*^(<li>)/gm, '$1$2') // Fix extra space between list items
+                                                             .replace(/^(<li>.*<\/li>)+/gms, '<ul>$&</ul>');
+
+                    elements.aiAdviceResult.style.display = 'block';
+
+                } catch (error) {
+                    console.error("AI Advice Error:", error);
+                    elements.aiAdviceResult.innerHTML = `<p style="color:var(--danger-color);"><strong>Advice Generation Failed!</strong><br>Could not get a response from the AI. Please try again later.</p>`;
+                    elements.aiAdviceResult.style.display = 'block';
+                } finally {
+                    elements.aiAdviceLoader.style.display = 'none';
+                    elements.getAiAdviceBtn.disabled = false;
+                }
+            });
+
+            // AI-powered OCR functionality
+            elements.scanPolicyBtn.addEventListener('click', () => {
+                elements.ocrInput.click();
+            });
+
+            elements.ocrInput.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if (!file || !file.type.startsWith('image/')) return;
+
+                elements.scanPolicyBtn.disabled = true;
+                elements.ocrStatus.textContent = "AI is reading your document...";
+                elements.ocrStatus.style.color = 'var(--text-color)';
+
+                try {
+                    const imagePart = await fileToGenerativePart(file);
+                    const prompt = "Analyze the attached insurance document image and extract the policy number and the date of the incident. If an incident date is not present, use the policy issue date. Format the date as YYYY-MM-DD.";
+                    
+                    const schema = {
+                        type: Type.OBJECT,
+                        properties: {
+                            policyNumber: {
+                                type: Type.STRING,
+                                description: "The insurance policy number, including letters and numbers."
+                            },
+                            date: {
+                                type: Type.STRING,
+                                description: "The date of the incident or policy issue in YYYY-MM-DD format."
+                            }
+                        },
+                        required: ['policyNumber', 'date']
+                    };
+
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-2.5-flash',
+                        contents: { parts: [{ text: prompt }, imagePart] },
+                        config: {
+                            responseMimeType: "application/json",
+                            responseSchema: schema
+                        }
+                    });
+
+                    const resultJson = JSON.parse(response.text);
+
+                    if (resultJson.policyNumber) {
+                        elements.policyNumber.value = resultJson.policyNumber;
+                    }
+                    if (resultJson.date && /^\d{4}-\d{2}-\d{2}$/.test(resultJson.date)) {
+                        elements.incidentDate.value = resultJson.date;
+                    }
+                    
+                    elements.ocrStatus.textContent = "Scan complete! Details auto-filled.";
+                    elements.ocrStatus.style.color = 'var(--primary-color)';
+
+                } catch (error) {
+                    console.error("AI OCR Error:", error);
+                    elements.ocrStatus.textContent = "AI scan failed. Please enter details manually.";
+                    elements.ocrStatus.style.color = 'var(--danger-color)';
+                } finally {
+                    elements.scanPolicyBtn.disabled = false;
+                    elements.ocrInput.value = ''; // Reset file input
+                }
+            });
+
+            // Remove placeholder claims and load from storage
+            elements.claimsList.innerHTML = ''; 
+            loadClaims();
+        });
+    </script>
+</body>
+</html>

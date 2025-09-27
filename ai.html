@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Chatbot</title>
+    <style>
+        :root {
+            --primary-bg: #f0f4f9;
+            --secondary-bg: #ffffff;
+            --border-color: #d1d9e6;
+            --text-color: #333;
+            --user-msg-bg: #007bff;
+            --user-msg-text: #ffffff;
+            --model-msg-bg: #e9ecef;
+            --model-msg-text: #333;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--font-family);
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 600px;
+            height: 90vh;
+            max-height: 800px;
+            background-color: var(--secondary-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 1rem;
+            margin: 0;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #f8f9fa;
+        }
+
+        #chat-history {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        /* For smooth scrolling */
+        #chat-history {
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background-color: var(--user-msg-bg);
+            color: var(--user-msg-text);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .model-message {
+            background-color: var(--model-msg-bg);
+            color: var(--model-msg-text);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .model-message.loading::after {
+            content: '●';
+            animation: blink 1s infinite;
+            display: inline-block;
+            margin-left: 4px;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            align-self: center;
+            text-align: center;
+        }
+
+        #chat-form {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+            gap: 0.5rem;
+            background-color: #f8f9fa;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-family: var(--font-family);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #chat-input:focus {
+            border-color: var(--user-msg-bg);
+        }
+        
+        #chat-input:disabled {
+            background-color: #e9ecef;
+        }
+
+        #chat-form button {
+            background-color: var(--user-msg-bg);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #chat-form button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        #chat-form button:disabled {
+            background-color: #a0c7ff;
+            cursor: not-allowed;
+        }
+
+        #chat-form button svg {
+            fill: white;
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 600px) {
+            #app-container {
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+                border: none;
+            }
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.21.0"
+  }
+}
+</script>
+</head>
+<body>
+    <main id="app-container">
+        <h1>Agriconnect Chatbot</h1>
+        <div id="chat-history"></div>
+        <form id="chat-form" aria-label="Chat input form">
+            <input type="text" id="chat-input" placeholder="Ask Gemini..." autocomplete="off" required aria-label="Message input">
+            <button type="submit" id="send-button" aria-label="Send message">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3.4 20.4l17.4-8.4c.7-.3.7-1.2 0-1.6L3.4 2.1c-.6-.3-1.3.1-1.3.8v6.5c0 .4.2.7.5.9l6.3 2.7-6.3 2.7c-.3.1-.5.5-.5.9v6.5c0 .7.7 1.1 1.3.8z"/></svg>
+            </button>
+        </form>
+    </main>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
