@@ -9,7 +9,7 @@ const port = 3000;
 
 // IMPORTANT: Replace this with your actual Gemini API key.
 // Never expose this key in client-side code.
-const GEMINI_API_KEY = "AIzaSyCeil1RRuySImAxPOO6bxh31VDRXms4JSc"; // <--- REPLACE WITH YOUR API KEY
+const GEMINI_API_KEY = "*******************************"; // <--- REPLACE WITH YOUR API KEY
 
 if (!GEMINI_API_KEY) {
     console.error("Error: GEMINI_API_KEY is not set. Please add your API key to aiagent.js.");
@@ -90,3 +90,4 @@ app.listen(port, () => {
     console.log(`AI Agent backend listening at http://localhost:${port}`);
     console.log(`To use, update your frontend's GEMINI_URL to 'http://localhost:${port}/ask-ai'`);
 });
+
